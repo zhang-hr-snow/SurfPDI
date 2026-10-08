@@ -1,0 +1,4 @@
+# Additional dependencies for scripts/docker_surface/.
+pykeops
+plyfile
+pyvtk

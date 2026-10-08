@@ -1,0 +1,89 @@
+# Final SurfPDI configuration: each entry reads its corresponding stage.
+pretraining:
+  run:
+    name: full_surface_multimodal_ssl_32
+    seed: 42
+    device: cuda
+    output_root: results/pretraining
+  data:
+    processed_root: data/processed/base_res1.0_full
+    cv_split: [train573]
+  cv:
+    n_splits: 5
+  loader:
+    batch_size: 1
+    num_workers: 0
+    pin_memory: true
+  model:
+    surface_feature_dim: 14
+    surface_hidden_dim: 32
+    surface_message_dim: 16
+    residue_hidden_dim: 128
+    residue_message_dim: 32
+    projection_dim: 64
+    coordinate_weight_clamp: 0.10
+    contrast_teacher_mode: frozen_esmc
+  loss:
+    mask_ratio: 0.30
+    contrastive_weight: 0.01
+    contrast_warmup_epochs: 5
+    temperature: 0.20
+    queue_size: 256
+  optimizer:
+    lr: 0.00005
+    weight_decay: 0.001
+  training:
+    epochs: 50
+    patience: 10
+    amp: true
+    amp_dtype: float16
+    grad_clip_norm: 1.0
+    max_nonfinite_gradient_skips_per_epoch: 3
+
+supervised:
+  run:
+    name: 02_p2_bs2
+    seed: 42
+    device: cuda
+    output_root: /home/zxx/surfpdi/results/server_full_queue/full_20260722/runs
+  data:
+    processed_root: data/processed/base_res1.0_full
+    cv_split: [train573]
+    independent_tests: [test129, test181]
+  cv:
+    n_splits: 5
+    stratify: positive_ratio_bins
+    seed: 42
+  loader:
+    batch_size: 2
+    num_workers: 0
+    pin_memory: true
+    persistent_workers: false
+  model:
+    node_feat_dim: 14
+    edge_attr_dim: 3
+    res_edge_dim: 4
+    hidden_dim: 128
+    surface_hidden_dim: 32
+    surface_message_dim: 16
+    surface_norm_coors: true
+    surface_coordinate_weight_clamp: 0.1
+    transformer_dropout: 0.1
+    classifier_dropout: 0.3
+  loss:
+    class_weight: clipped_balanced
+    max_positive_class_weight: 1.0
+  optim:
+    lr: 0.0001
+    weight_decay: 0.001
+  threshold:
+    metric: mcc
+    num_thresholds: 200
+  train:
+    epochs: 50
+    patience: 10
+    amp: true
+    grad_clip_norm: 1.0
+    monitor: auc
+    monitor_mode: max
+    checkpoint_monitors: [auc, mcc]

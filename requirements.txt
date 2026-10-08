@@ -1,0 +1,9 @@
+# Install torch, torch-geometric, torch-scatter, and torch-cluster separately
+# using wheels that match your CUDA runtime; see README.md.
+numpy
+scipy
+scikit-learn
+PyYAML
+biopython
+einops
+tqdm
